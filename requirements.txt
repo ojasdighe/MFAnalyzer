@@ -1,0 +1,8 @@
+flask
+numpy
+scipy
+plotly
+ggplot
+pandas
+yfinance
+werkzeug
