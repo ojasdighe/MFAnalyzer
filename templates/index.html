@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutual Fund Analysis Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mutual Fund Analysis Dashboard</h1>
+            <div class="fund-info">
+                <h2 id="fund-name"></h2>
+                <p id="fund-details"></p>
+            </div>
+        </header>
+
+        <main>
+            <section class="analysis-controls">
+                <div class="control-panel">
+                    <h3>Analysis Parameters</h3>
+                    
+                    <div class="date-range">
+                        <div class="form-group">
+                            <label for="startDate">Start Date:</label>
+                            <input type="date" id="startDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date:</label>
+                            <input type="date" id="endDate" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="metric-controls">
+                        <div class="form-group">
+                            <label for="rollingWindow">Rolling Returns Window (months):</label>
+                            <input type="number" id="rollingWindow" min="1" max="60" value="12" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cagrPeriod">CAGR Period (years):</label>
+                            <input type="number" id="cagrPeriod" min="1" max="10" value="3" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sharpePeriod">Sharpe Ratio Period (years):</label>
+                            <input type="number" id="sharpePeriod" min="1" max="10" value="3" class="form-control">
+                        </div>
+                    </div>
+
+                    <button onclick="analyzeFund()" class="btn-primary">Analyze Fund</button>
+                </div>
+            </section>
+
+            <section class="historical-comparison hidden">
+                <h3>Historical NAV Comparison</h3>
+                <div class="comparison-controls">
+                    <button class="period-btn" data-period="1">1M</button>
+                    <button class="period-btn" data-period="3">3M</button>
+                    <button class="period-btn" data-period="6">6M</button>
+                    <button class="period-btn" data-period="12">1Y</button>
+                    <button class="period-btn" data-period="36">3Y</button>
+                    <button class="period-btn" data-period="60">5Y</button>
+                </div>
+                <div id="historical-chart"></div>
+            </section>
+
+            <section class="metrics-dashboard hidden">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Absolute Returns</h3>
+                        <p id="absolute-returns"></p>
+                        <div class="metric-chart" id="absolute-returns-chart"></div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h3>Rolling Returns</h3>
+                        <p id="rolling-returns"></p>
+                        <div class="metric-chart" id="rolling-returns-chart"></div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h3>CAGR</h3>
+                        <p id="cagr"></p>
+                        <div class="metric-chart" id="cagr-chart"></div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h3>XIRR</h3>
+                        <p id="xirr"></p>
+                        <div class="metric-chart" id="xirr-chart"></div>
+                        <div class="cashflow-controls">
+                            <button class="btn-secondary" onclick="addCashflow()">Add Cashflow</button>
+                            <div id="cashflow-entries"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h3>Sharpe Ratio</h3>
+                        <p id="sharpe-ratio"></p>
+                        <div class="metric-chart" id="sharpe-ratio-chart"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="recommendation-dashboard hidden">
+                <div class="recommendation-header">
+                    <h2>Investment Recommendation</h2>
+                    <div class="score-indicator">
+                        <span>Analysis Score:</span>
+                        <div id="score-value"></div>
+                    </div>
+                </div>
+
+                <div class="recommendation-content">
+                    <div class="recommendation-card">
+                        <h3>Decision</h3>
+                        <div id="recommendation-decision" class="decision-box"></div>
+                    </div>
+
+                    <div class="analysis-reasons">
+                        <h3>Key Findings</h3>
+                        <ul id="analysis-reasons"></ul>
+                    </div>
+
+                    <div class="action-items">
+                        <h3>Recommended Actions</h3>
+                        <ul id="action-items"></ul>
+                    </div>
+                </div>
+
+                <div class="comparative-analysis">
+                    <h3>Comparative Analysis</h3>
+                    <div class="comparison-grid">
+                        <div class="comparison-card">
+                            <h4>Category Average</h4>
+                            <div id="category-comparison"></div>
+                        </div>
+                        <div class="comparison-card">
+                            <h4>Benchmark</h4>
+                            <div id="benchmark-comparison"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="historical-trends hidden">
+                <h3>Performance Trends</h3>
+                <div class="trends-grid">
+                    <div class="trend-card">
+                        <h4>NAV Trend</h4>
+                        <div id="nav-trend-chart"></div>
+                    </div>
+                    <div class="trend-card">
+                        <h4>Returns Distribution</h4>
+                        <div id="returns-distribution-chart"></div>
+                    </div>
+                    <div class="trend-card">
+                        <h4>Risk Metrics</h4>
+                        <div id="risk-metrics-chart"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="disclaimer">
+                <p>Past performance is not indicative of future returns. Please consult your financial advisor before making investment decisions.</p>
+            </div>
+            <div class="last-updated">
+                Last updated: <span id="last-updated-time"></span>
+            </div>
+        </footer>
+    </div>
+
+    <div class="loading-overlay hidden">
+        <div class="loader"></div>
+        <p>Analyzing fund data...</p>
+    </div>
+
+    <template id="cashflow-entry-template">
+        <div class="cashflow-entry">
+            <input type="date" class="cashflow-date form-control">
+            <input type="number" class="cashflow-amount form-control" placeholder="Amount">
+            <select class="cashflow-type form-control">
+                <option value="invest">Investment</option>
+                <option value="withdraw">Withdrawal</option>
+            </select>
+            <button class="btn-danger" onclick="removeCashflow(this)">Remove</button>
+        </div>
+    </template>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
