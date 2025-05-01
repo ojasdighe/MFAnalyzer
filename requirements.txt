@@ -8,4 +8,5 @@ requests
 scipy
 typing
 base64
+io
 logging
